@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9fc5dcfc-642b-4037-aad7-80d18785663a">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="7aad2ec6-6bfd-47ec-bbd7-1d405330d825" />
+	<flow name="tic-toc-toeFlow" doc:id="01e04cf1-ec05-4584-8667-0760caf46f55" >
+		<http:listener doc:name="Listener" doc:id="f8523e99-2985-4a7e-a9ed-57b81b368b9e" config-ref="HTTP_Listener_config" path="/login"/>
+		<os:clear doc:name="Clear" doc:id="dd92703b-5597-4d9f-bed7-12067676f2bb" objectStore="Object_store"/>
+		<parse-template doc:name="Parse Template" doc:id="03327a2d-c57d-4cfe-afc4-59f5593ea5a5" location="home.html"/>
+	</flow>
+	<flow name="tic-toc-toeFlow1" doc:id="bf922b02-3e07-4a34-80cc-db25018fbc64" >
+		<http:listener doc:name="Listener" doc:id="aca767e3-7139-4209-8718-c87857ec2a59" config-ref="HTTP_Listener_config" path="/play"/>
+		<set-variable value="#['index'++ attributes.queryString[5]]" doc:name="Set Variable" doc:id="b3c5b2c7-c338-4c0d-a602-5a371bd98131" variableName="query"/>
+		
+		<os:retrieve doc:name="Retrieve change" doc:id="51fbd912-4275-40aa-8dab-c5e8a535a0e2" key="change" target="alternet" objectStore="Object_store">
+			<os:default-value><![CDATA[#["X"]]]></os:default-value>
+		</os:retrieve>
+		<set-variable value='#[vars.alternet]' doc:name="value" doc:id="dc95d225-5a0b-4d14-b950-a31c7a8f5a3e" variableName="value"/>
+		<os:store doc:name="Store" doc:id="fba29804-7d38-4ee5-982c-46136c2e25b1" key="#[vars.query]" objectStore="Object_store">
+			<os:value ><![CDATA[#[if(vars.alternet== "X") "X" else "O"]]]></os:value>
+		</os:store>
+		<os:store doc:name="Store" doc:id="9acaf657-8d3b-4f1f-a191-5cbc05e200f1" key="change" objectStore="Object_store">
+			<os:value ><![CDATA[#[if(vars.alternet == "X") "O" else "X"]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="Logger" doc:id="9a5a2a04-ff32-48cb-906a-75f2b91321ad" message="#[vars.value]"/>
+		<os:retrieve-all doc:name="Retrieve all" doc:id="1f30d607-9db8-4a71-b025-397365364a3d" objectStore="Object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="d1aea6b2-f37a-4104-b180-f5f8a283378b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	{
+	index1 :payload.index1 default "#",
+	index2 :payload.index2 default "#",
+	index3 :payload.index3 default "#",
+	index4 :payload.index4 default "#",
+	index5 :payload.index5 default "#",
+	index6 :payload.index6 default "#",
+	index7 :payload.index7 default "#",
+	index8 :payload.index8 default "#",
+	index9 :payload.index9 default "#"
+	
+	
+
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="mainRes" ><![CDATA[%dw 2.0
+output application/json
+---
+
+	{
+	index1 :payload.index1 default "#",
+	index2 :payload.index2 default "#",
+	index3 :payload.index3 default "#",
+	index4 :payload.index4 default "#",
+	index5 :payload.index5 default "#",
+	index6 :payload.index6 default "#",
+	index7 :payload.index7 default "#",
+	index8 :payload.index8 default "#",
+	index9 :payload.index9 default "#"
+	
+	
+
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="a3734e51-3b72-43de-9564-2198ab99e1c5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="checkWinCondition" ><![CDATA[%dw 2.0
+output application/json
+---
+
+if( (payload.index1  ++  payload.index2  ++  payload.index3) == "XXX" or (payload.index1  ++  payload.index2  ++  payload.index3) == "OOO") true
+  
+else if ((payload.index4  ++  payload.index5  ++  payload.index6)  == "XXX" or (payload.index4  ++  payload.index5  ++  payload.index6) == "OOO") true
+else if ((payload.index7  ++  payload.index8  ++  payload.index9) == "XXX" or (payload.index7  ++  payload.index8  ++  payload.index9) == "OOO") true
+else if ((payload.index1  ++  payload.index4  ++  payload.index7) == "XXX" or (payload.index1  ++  payload.index4  ++  payload.index7) == "OOO") true
+else if ((payload.index2  ++  payload.index5  ++  payload.index8) == "XXX" or (payload.index2  ++  payload.index5  ++  payload.index8) == "OOO") true
+else if ((payload.index3  ++  payload.index6  ++  payload.index9) == "XXX" or (payload.index3  ++  payload.index6  ++  payload.index9) == "OOO") true
+else if ((payload.index1  ++  payload.index5  ++  payload.index9) == "XXX" or (payload.index1  ++  payload.index5  ++  payload.index9) == "OOO") true
+else if ((payload.index3  ++  payload.index5  ++  payload.index7) == "XXX" or (payload.index3  ++  payload.index5  ++  payload.index7) == "OOO") true
+else false
+
+]]></ee:set-variable>
+				<ee:set-variable variableName="checkDrawCondition" ><![CDATA[%dw 2.0
+output application/json
+---
+if ((payload.index1 == "X" or payload.index1 == "O") and 
+	(payload.index2 == "X" or payload.index2 == "O") and
+	(payload.index3 == "X" or payload.index3 == "O") and
+	(payload.index4 == "X" or payload.index4 == "O" ) and
+	(payload.index5 == "X" or payload.index5 == "O") and
+	(payload.index6 == "X" or payload.index6 == "O" ) and
+	(payload.index7 == "X" or payload.index7 == "O") and
+	(payload.index8 == "X" or payload.index8 == "O" ) and
+	(payload.index9 == "X" or payload.index9 == "O" ) )
+ true 
+ else 
+ 
+ false]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="7f5bac78-e32b-4490-be9a-1f1299399299" >
+			<when expression="#[vars.checkWinCondition]">
+				<set-variable value='#["You Won!"]' doc:name="Set Variable" doc:id="9e1db48d-f525-4d8e-b721-d31c66a37368" variableName="finalMessage"/>
+				<parse-template doc:name="Parse Template" doc:id="1dce1f37-cc53-4875-b84e-f6a0467acb59" location="reset.html"/>
+			</when>
+			<when expression="#[vars.checkDrawCondition]">
+				<set-variable value="#[&quot;It's a Draw!&quot;]" doc:name="Set Variable" doc:id="550984cb-ce58-4b85-8223-5b9b81c21e3a" variableName="finalMessage"/>
+				<parse-template doc:name="Parse Template" doc:id="4f73be50-4e6c-4b68-9720-b9105a23baa8" location="reset.html"/>
+			</when>
+			<otherwise >
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="3971dc09-1af6-4d5e-9f17-c0db137c5100" />
+				<parse-template doc:name="Parse Template" doc:id="72c6a38a-edd0-4190-99f7-a5eb2add31f2" location="pointMark.html" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="tic-toc-toeStoreFlow" doc:id="6fb4c268-97d2-4d02-b9f8-85503c975a86" >
+		<os:store doc:name="Store" doc:id="4675240a-e581-49f1-86fb-1d103cbc3d97" key="#[vars.query default 'X']" objectStore="Object_store">
+			<os:value ><![CDATA[#[vars.value]]]></os:value>
+		</os:store>
+	</flow>
+</mule>
